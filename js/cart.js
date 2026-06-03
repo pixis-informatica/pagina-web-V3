@@ -1065,6 +1065,7 @@ window.openProductModal = function (card, pushToHistory = true) {
   const btn = card.querySelector(".btn-add-cart");
 
   productoActual = {
+    id: card.dataset.pixisId || '',
     name: btn.dataset.name,
     price: parseFloat(btn.dataset.price),
     priceLocal: parseFloat(btn.dataset.priceLocal) || parseFloat(btn.dataset.price),
@@ -1160,8 +1161,8 @@ window.openProductModal = function (card, pushToHistory = true) {
 
   // Modificar la URL con un identificador único paramétrico para compartir
   if (pushToHistory) {
-    let slug = card.dataset.title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-    history.pushState({ modalOpen: true }, "", "?producto=" + slug + "&" + getCacheBuster());
+    const prodId = card.dataset.pixisId || card.dataset.title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    history.pushState({ modalOpen: true }, "", "?producto=" + prodId + "&" + getCacheBuster());
   }
 
   modal.classList.add('active');
@@ -3626,9 +3627,11 @@ if (btnShareLink) {
     const timestamp = Math.floor(Date.now() / 1000);
     const basePath = window.location.origin + '/share.php';
 
-    if (window.productoActual && window.productoActual.name) {
-      const slug = window.productoActual.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-      return basePath + '?producto=' + slug + '&cc=' + timestamp;
+    if (window.productoActual) {
+      const prodId = window.productoActual.id || (window.productoActual.name ? window.productoActual.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : '');
+      if (prodId) {
+        return basePath + '?producto=' + prodId + '&cc=' + timestamp;
+      }
     }
 
     const params = new URLSearchParams(window.location.search);
