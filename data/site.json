@@ -119,5 +119,16 @@
       "t": "GEFORCE RTX SERIES 50"
     }
   },
-  "cacheVersion": 1780525223168
+  "cacheVersion": 1780526003068,
+  "tasasCuotas": [
+    1.13,
+    1.31,
+    1.31,
+    1.6,
+    1.6
+  ],
+  "imageOptimization": {
+    "enabled": true,
+    "proxyUrl": "https://images.weserv.nl/?url="
+  }
 }
