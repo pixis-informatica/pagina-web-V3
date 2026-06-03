@@ -283,7 +283,11 @@ if (!$og_title && isset($_GET['categoria'])) {
         $og_description = "Explorá nuestra categoría de " . $cat_name . " en Pixis Informática. Encontrá los mejores precios y hardware de alto rendimiento.";
         
         if (!empty($found_category['customIcon'])) {
-            $og_image = build_absolute_url($domain, $found_category['customIcon']);
+            if ($is_facebook) {
+                $og_image = build_og_image_url($domain, $found_category['customIcon']);
+            } else {
+                $og_image = build_absolute_url($domain, $found_category['customIcon']);
+            }
         }
     }
 }
@@ -335,7 +339,13 @@ if (!$og_title && isset($_GET['banner'])) {
         $og_description = "¡No dejes pasar esta oportunidad! Descubrí los mejores productos en " . $banner_title . " con envíos a todo el país y el mejor precio local.";
         
         if ($found_banner_img !== '') {
-            $og_image = build_absolute_url($domain, $found_banner_img);
+            if ($is_facebook) {
+                // Facebook: canvas 1200×630 sin recortar
+                $og_image = build_og_image_url($domain, $found_banner_img);
+            } else {
+                // WhatsApp y otros: imagen original directa
+                $og_image = build_absolute_url($domain, $found_banner_img);
+            }
         }
     }
 }

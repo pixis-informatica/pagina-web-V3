@@ -32,6 +32,21 @@ if (!file_exists($abs_path) || !is_file($abs_path)) {
     }
 }
 
+// ─── Cache en disco ──────────────────────────────────────────────────────────
+$cache_dir = __DIR__ . '/cache';
+$cache_hash = md5($src . filemtime($abs_path));
+$cache_file = $cache_dir . '/og_' . $cache_hash . '.jpg';
+
+if (file_exists($cache_file)) {
+    // Servir desde el archivo de cache estático (Cero delay para Facebook/bots)
+    $cache_seconds = 86400 * 7; // Cachear por 7 días
+    header('Content-Type: image/jpeg');
+    header('Cache-Control: public, max-age=' . $cache_seconds);
+    header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $cache_seconds) . ' GMT');
+    readfile($cache_file);
+    exit;
+}
+
 // ─── Verificar que GD esté disponible ────────────────────────────────────────
 if (!function_exists('imagecreatetruecolor')) {
     // Sin GD: redirigir a la imagen original
@@ -108,8 +123,16 @@ imagedestroy($src_img);
 $border_color = imagecolorallocate($canvas, 176, 38, 255); // #b026ff
 imagerectangle($canvas, $dst_x - 1, $dst_y - 1, $dst_x + $new_w, $dst_y + $new_h, $border_color);
 
-// ─── Caché de la imagen generada (1 hora) ────────────────────────────────────
-$cache_seconds = 3600;
+// Guardar en caché física del servidor
+if (!file_exists($cache_dir)) {
+    @mkdir($cache_dir, 0755, true);
+}
+if (is_writable($cache_dir) || (!file_exists($cache_file) && is_writable(__DIR__))) {
+    @imagejpeg($canvas, $cache_file, 92);
+}
+
+// ─── Caché de la imagen generada en navegador (7 días) ───────────────────────
+$cache_seconds = 86400 * 7;
 header('Content-Type: image/jpeg');
 header('Cache-Control: public, max-age=' . $cache_seconds);
 header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $cache_seconds) . ' GMT');
