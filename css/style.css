@@ -6359,5 +6359,19 @@ body:has(#toggle-cart:checked) {
   justify-content: space-between !important;
 }
 
+/* Asegurar que los nombres de productos no se desborden de las tarjetas */
+.card h3,
+.card .card-title,
+.nuevos-ingresos .card .card-title,
+.destacados .card .card-title {
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+  white-space: normal !important;
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+  box-sizing: border-box !important;
+}
+
 
 

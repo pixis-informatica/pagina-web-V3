@@ -2108,8 +2108,11 @@ searchInput.addEventListener('input', (e) => {
 
   /* 🔥 OCULTAR UI DE CATEGORÍAS MIENTRAS SE BUSCA */
   const ocultar = buscando;
-  document.querySelectorAll('.categoria').forEach(el => el.style.display = ocultar ? 'none' : '');
-  document.querySelectorAll('.categoria-ui').forEach(el => el.style.display = ocultar ? 'none' : '');
+  const elementosCatalogo = document.querySelectorAll(
+    '#catalogo-completo h3.categoria, #catalogo-completo .categoria-ui, #catalogo-completo .productos:not(#_sortFlatContainer), #catalogo-completo .separador-categoria, #catalogo-completo .dynamic-cat-wrapper'
+  );
+  elementosCatalogo.forEach(el => el.style.display = ocultar ? 'none' : '');
+
   // El botón "Menú de Productos" siempre visible — el usuario puede necesitarlo
   // en cualquier momento (búsqueda, filtro de carrusel, etc.)
   if (btnCategorias) btnCategorias.style.display = '';
