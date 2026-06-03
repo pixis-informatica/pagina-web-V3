@@ -242,8 +242,13 @@ if (isset($_GET['producto'])) {
         }
 
         if ($p_image !== '') {
-            // Usar og-image.php para generar imagen 1200×630 centrada sin recortar
-            $og_image = build_og_image_url($domain, $p_image);
+            if ($is_facebook) {
+                // Facebook: canvas 1200×630 sin recortar
+                $og_image = build_og_image_url($domain, $p_image);
+            } else {
+                // WhatsApp y otros bots: imagen original directa
+                $og_image = build_absolute_url($domain, $p_image);
+            }
         }
     }
 }
@@ -357,10 +362,12 @@ if (!$og_image) {
     <meta property="og:title" content="<?php echo htmlspecialchars($og_title); ?>">
     <meta property="og:description" content="<?php echo htmlspecialchars($og_description); ?>">
     <meta property="og:image" content="<?php echo htmlspecialchars($og_image); ?>">
+    <?php if ($is_facebook): ?>
     <!-- Dimensiones fijas 1200×630 para que Facebook no recorte la imagen -->
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:type" content="image/jpeg">
+    <?php endif; ?>
     <meta property="og:url" content="<?php echo htmlspecialchars($redirect_url); ?>">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="<?php echo htmlspecialchars($og_title); ?>">
