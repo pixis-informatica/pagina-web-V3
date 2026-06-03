@@ -86,42 +86,71 @@ $canvas = imagecreatetruecolor($OG_W, $OG_H);
 $bg_color = imagecolorallocate($canvas, 13, 13, 13);
 imagefill($canvas, 0, 0, $bg_color);
 
-// ─── Calcular posición centrada con padding ───────────────────────────────────
-$padding = 60; // px de margen en todos los lados
-$max_w = $OG_W - ($padding * 2);
-$max_h = $OG_H - ($padding * 2);
-
 $sw = imagesx($src_img);
 $sh = imagesy($src_img);
 
-// Escalar manteniendo aspecto, sin agrandar más que el original
-$ratio = min($max_w / $sw, $max_h / $sh, 1.0);
-$new_w = (int)round($sw * $ratio);
-$new_h = (int)round($sh * $ratio);
+// ─── Detectar si es banner panorámico o imagen de producto ────────────────────
+// Ratio del canvas: 1200/630 ≈ 1.905
+// Si la imagen fuente es más ancha (ratio >= 1.6), es un banner panorámico:
+//   → modo COVER: la imagen llena todo el canvas (recorte centrado, sin bordes negros)
+// Si es producto (cuadrado o vertical): modo CONTAIN centrado con padding y borde
+$img_ratio    = ($sh > 0) ? ($sw / $sh) : 1;
+$canvas_ratio = $OG_W / $OG_H; // ~1.905
+$is_banner    = ($img_ratio >= 1.6); // panorámica → banner
 
-// Centrar
-$dst_x = (int)round(($OG_W - $new_w) / 2);
-$dst_y = (int)round(($OG_H - $new_h) / 2);
-
-// ─── Copiar imagen fuente centrada y escalada ─────────────────────────────────
-// Soporte transparencia PNG
 imagealphablending($canvas, true);
 imagesavealpha($canvas, false);
 
-imagecopyresampled(
-    $canvas, $src_img,
-    $dst_x, $dst_y,   // destino X, Y
-    0, 0,              // fuente X, Y
-    $new_w, $new_h,    // ancho/alto destino
-    $sw, $sh           // ancho/alto fuente
-);
+if ($is_banner) {
+    // ── MODO COVER: la imagen llena todo el canvas 1200×630 ──────────────────
+    // Escalar para que ambos lados cubran el canvas (tomar el ratio mayor)
+    $scale    = max($OG_W / $sw, $OG_H / $sh);
+    $scaled_w = (int)round($sw * $scale);
+    $scaled_h = (int)round($sh * $scale);
 
-imagedestroy($src_img);
+    // Posición fuente para recorte centrado
+    $src_x = (int)round(($scaled_w - $OG_W) / 2 / $scale);
+    $src_y = (int)round(($scaled_h - $OG_H) / 2 / $scale);
+    $src_w = (int)round($OG_W / $scale);
+    $src_h = (int)round($OG_H / $scale);
 
-// ─── Borde sutil alrededor de la imagen (opcional) ───────────────────────────
-// Pequeño rectángulo de borde violeta Pixis
-$border_color = imagecolorallocate($canvas, 176, 38, 255); // #b026ff
-imagerectangle($canvas, $dst_x - 1, $dst_y - 1, $dst_x + $new_w, $dst_y + $new_h, $border_color);
+    imagecopyresampled(
+        $canvas, $src_img,
+        0, 0,          // destino: esquina superior-izquierda
+        $src_x, $src_y,
+        $OG_W, $OG_H,
+        $src_w, $src_h
+    );
+
+    imagedestroy($src_img);
+    // Sin borde para banners: la imagen ya llena todo
+} else {
+    // ── MODO CONTAIN: imagen de producto centrada con padding ─────────────────
+    $padding = 60;
+    $max_w   = $OG_W - ($padding * 2);
+    $max_h   = $OG_H - ($padding * 2);
+
+    $ratio = min($max_w / $sw, $max_h / $sh, 1.0);
+    $new_w = (int)round($sw * $ratio);
+    $new_h = (int)round($sh * $ratio);
+
+    $dst_x = (int)round(($OG_W - $new_w) / 2);
+    $dst_y = (int)round(($OG_H - $new_h) / 2);
+
+    imagecopyresampled(
+        $canvas, $src_img,
+        $dst_x, $dst_y,
+        0, 0,
+        $new_w, $new_h,
+        $sw, $sh
+    );
+
+    imagedestroy($src_img);
+
+    // Borde sutil violeta Pixis alrededor del producto
+    $border_color = imagecolorallocate($canvas, 176, 38, 255); // #b026ff
+    imagerectangle($canvas, $dst_x - 1, $dst_y - 1, $dst_x + $new_w, $dst_y + $new_h, $border_color);
+}
 
 // Guardar en caché física del servidor
 if (!file_exists($cache_dir)) {
