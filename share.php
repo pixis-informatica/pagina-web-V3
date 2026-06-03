@@ -1,4 +1,5 @@
 <?php
+// Anti-cache headers first thing
 header('Content-Type: text/html; charset=utf-8');
 header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
 header('Pragma: no-cache');
@@ -10,6 +11,28 @@ if (isset($_SERVER['HTTP_HOST'])) {
     $domain = $protocol . $_SERVER['HTTP_HOST'];
 }
 
+// Redirect real users to the frontend immediately if not a bot
+$user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
+$is_bot = preg_match('/(WhatsApp|facebookexternalhit|Twitterbot|Discordbot|LinkedInBot|TelegramBot|Slackbot|Googlebot|bingbot)/i', $user_agent);
+
+$query_params = !empty($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '';
+$redirect_url = rtrim($domain, '/') . '/index.html' . $query_params;
+
+if (!$is_bot) {
+    header('Location: ' . $redirect_url, true, 302);
+    exit;
+}
+
+// Helper: normalize and build absolute URL
+function build_absolute_url($domain, $path) {
+    if (empty($path)) return '';
+    $path = str_replace('\\', '/', $path);
+    $path = ltrim($path, '/');
+    $path = preg_replace('#/+#', '/', $path);
+    return rtrim($domain, '/') . '/' . $path;
+}
+
+// Helper: format price
 function format_price($price_val) {
     if (is_numeric($price_val)) {
         return '$' . number_format((float)$price_val, 2, ',', '.');
@@ -17,6 +40,7 @@ function format_price($price_val) {
     return $price_val;
 }
 
+// Helper: clean description
 function clean_description($desc) {
     if (empty($desc)) return '';
     $desc = strip_tags($desc);
@@ -29,6 +53,7 @@ function clean_description($desc) {
     return $desc;
 }
 
+// Helper: slugify
 function get_slug($text) {
     $unwanted_array = array(
         'Š'=>'S', 'š'=>'s', 'Ž'=>'Z', 'ž'=>'z', 'À'=>'A', 'Á'=>'A', 'Â'=>'A', 'Ã'=>'A', 'Ä'=>'A', 'Å'=>'A', 'Æ'=>'A', 'Ç'=>'C',
@@ -45,15 +70,21 @@ function get_slug($text) {
     return trim($text, '-');
 }
 
+// Default/fallback values
+$fallback_title = "Pixis Informática | Especialistas en Computación";
+$fallback_description = "Tienda de computación online en Santiago del Estero. Venta de accesorios gamer, hardware de alto rendimiento y servicio técnico especializado.";
+$fallback_image = build_absolute_url($domain, 'img/TECH24.png');
+
 $og_title = null;
 $og_description = null;
 $og_image = null;
 
+// Scenario 1: Product
 if (isset($_GET['producto'])) {
     $producto_query = trim($_GET['producto']);
     $found_product = null;
 
-    if (!empty($producto_query)) {
+    if ($producto_query !== '') {
         $products_file = __DIR__ . '/data/products.json';
         if (file_exists($products_file)) {
             $products_data = json_decode(file_get_contents($products_file), true);
@@ -63,9 +94,9 @@ if (isset($_GET['producto'])) {
                     $p_slug = isset($p['slug']) ? trim($p['slug']) : '';
                     $p_title_slug = isset($p['title']) ? get_slug($p['title']) : '';
 
-                    if ((!empty($p_id) && strcasecmp($p_id, $producto_query) === 0) || 
-                        (!empty($p_slug) && strcasecmp($p_slug, $producto_query) === 0) || 
-                        (!empty($p_title_slug) && strcasecmp($p_title_slug, $producto_query) === 0)) {
+                    if (($p_id !== '' && strcasecmp($p_id, $producto_query) === 0) || 
+                        ($p_slug !== '' && strcasecmp($p_slug, $producto_query) === 0) || 
+                        ($p_title_slug !== '' && strcasecmp($p_title_slug, $producto_query) === 0)) {
                         $found_product = $p;
                         break;
                     }
@@ -75,40 +106,47 @@ if (isset($_GET['producto'])) {
     }
 
     if ($found_product) {
-        $p_title = isset($found_product['title']) ? $found_product['title'] : '';
-        $p_price = '';
-        if (isset($found_product['price']) && $found_product['price'] > 0) {
-            $p_price = format_price($found_product['price']);
-        } elseif (isset($found_product['priceNum']) && (int)$found_product['priceNum'] > 0) {
-            $p_price = format_price($found_product['priceNum']);
-        } elseif (isset($found_product['priceVisible'])) {
-            $p_price = $found_product['priceVisible'];
-        }
+        $p_title = isset($found_product['title']) ? trim($found_product['title']) : '';
         
-        if (!empty($p_price)) {
-            $og_title = $p_title . " - Pixis Informática | Precio especial: " . $p_price;
+        // Find price: check price, priceNum, priceVisible
+        $price_val = null;
+        if (isset($found_product['price']) && is_numeric($found_product['price']) && (float)$found_product['price'] > 0) {
+            $price_val = (float)$found_product['price'];
+        } elseif (isset($found_product['priceNum']) && is_numeric($found_product['priceNum']) && (float)$found_product['priceNum'] > 0) {
+            $price_val = (float)$found_product['priceNum'];
+        }
+
+        if ($price_val !== null) {
+            $formatted_price = format_price($price_val);
+        } elseif (!empty($found_product['priceVisible'])) {
+            $formatted_price = trim($found_product['priceVisible']);
         } else {
-            $og_title = $p_title . " - Pixis Informática";
+            $formatted_price = '';
         }
-        
+
+        if ($formatted_price !== '') {
+            $og_title = $p_title . " - " . $formatted_price;
+        } else {
+            $og_title = $p_title;
+        }
+
         $og_description = isset($found_product['desc']) ? clean_description($found_product['desc']) : '';
-        if (empty($og_description)) {
+        if ($og_description === '') {
             $og_description = "Comprá " . $p_title . " al mejor precio en Pixis Informática. Hardware de alto rendimiento en Santiago del Estero.";
         }
-        
+
         if (!empty($found_product['img'])) {
-            $img_path = ltrim($found_product['img'], '/');
-            $img_path = str_replace('\\', '/', $img_path);
-            $og_image = $domain . '/' . $img_path;
+            $og_image = build_absolute_url($domain, $found_product['img']);
         }
     }
 }
 
+// Scenario 2: Category
 if (!$og_title && isset($_GET['categoria'])) {
     $categoria_query = trim($_GET['categoria']);
     $found_category = null;
 
-    if (!empty($categoria_query)) {
+    if ($categoria_query !== '') {
         $categories_file = __DIR__ . '/data/categories.json';
         if (file_exists($categories_file)) {
             $categories_data = json_decode(file_get_contents($categories_file), true);
@@ -117,8 +155,8 @@ if (!$og_title && isset($_GET['categoria'])) {
                     $cat_id = isset($cat['id']) ? trim($cat['id']) : '';
                     $cat_name_slug = isset($cat['name']) ? get_slug($cat['name']) : '';
 
-                    if ((!empty($cat_id) && strcasecmp($cat_id, $categoria_query) === 0) || 
-                        (!empty($cat_name_slug) && strcasecmp($cat_name_slug, $categoria_query) === 0)) {
+                    if (($cat_id !== '' && strcasecmp($cat_id, $categoria_query) === 0) || 
+                        ($cat_name_slug !== '' && strcasecmp($cat_name_slug, $categoria_query) === 0)) {
                         $found_category = $cat;
                         break;
                     }
@@ -128,30 +166,29 @@ if (!$og_title && isset($_GET['categoria'])) {
     }
 
     if ($found_category) {
-        $cat_name = $found_category['name'];
-        $og_title = "Categoría: " . $cat_name . " - Pixis Informática";
+        $cat_name = isset($found_category['name']) ? trim($found_category['name']) : '';
+        $og_title = $cat_name . " - Pixis Informática";
         $og_description = "Explorá nuestra categoría de " . $cat_name . " en Pixis Informática. Encontrá los mejores precios y hardware de alto rendimiento.";
         
         if (!empty($found_category['customIcon'])) {
-            $img_path = ltrim($found_category['customIcon'], '/');
-            $img_path = str_replace('\\', '/', $img_path);
-            $og_image = $domain . '/' . $img_path;
+            $og_image = build_absolute_url($domain, $found_category['customIcon']);
         }
     }
 }
 
+// Scenario 3: Banner
 if (!$og_title && isset($_GET['banner'])) {
     $banner_query = trim($_GET['banner']);
     $found_banner_info = null;
     $found_banner_img = '';
     $banner_key = null;
 
-    if (!empty($banner_query)) {
+    if ($banner_query !== '') {
         $site_file = __DIR__ . '/data/site.json';
         if (file_exists($site_file)) {
             $site_data = json_decode(file_get_contents($site_file), true);
             if (is_array($site_data)) {
-                if (isset($site_data['banners'])) {
+                if (isset($site_data['banners']) && is_array($site_data['banners'])) {
                     foreach ($site_data['banners'] as $b_id => $b_info) {
                         $b_title_slug = isset($b_info['t']) ? get_slug($b_info['t']) : '';
                         if (strcasecmp($b_id, $banner_query) === 0 || 
@@ -165,13 +202,15 @@ if (!$og_title && isset($_GET['banner'])) {
                 }
                 
                 $carousels = array_merge(
-                    isset($site_data['carouselTop']) ? $site_data['carouselTop'] : array(),
-                    isset($site_data['carouselBottom']) ? $site_data['carouselBottom'] : array()
+                    isset($site_data['carouselTop']) && is_array($site_data['carouselTop']) ? $site_data['carouselTop'] : array(),
+                    isset($site_data['carouselBottom']) && is_array($site_data['carouselBottom']) ? $site_data['carouselBottom'] : array()
                 );
                 foreach ($carousels as $slide) {
                     if (isset($slide['bannerId']) && (strcasecmp($slide['bannerId'], $banner_query) === 0 || ($banner_key !== null && strcasecmp($slide['bannerId'], $banner_key) === 0))) {
-                        $found_banner_img = $slide['imgPc'];
-                        break;
+                        if (!empty($slide['imgPc'])) {
+                            $found_banner_img = $slide['imgPc'];
+                            break;
+                        }
                     }
                 }
             }
@@ -179,30 +218,26 @@ if (!$og_title && isset($_GET['banner'])) {
     }
 
     if ($found_banner_info) {
-        $banner_title = $found_banner_info['t'];
+        $banner_title = isset($found_banner_info['t']) ? trim($found_banner_info['t']) : '';
         $og_title = "🔥 ¡Equipate Ya! " . $banner_title . " en Pixis Informática";
         $og_description = "¡No dejes pasar esta oportunidad! Descubrí los mejores productos en " . $banner_title . " con envíos a todo el país y el mejor precio local.";
         
-        if (!empty($found_banner_img)) {
-            $img_path = ltrim($found_banner_img, '/');
-            $img_path = str_replace('\\', '/', $img_path);
-            $og_image = $domain . '/' . $img_path;
+        if ($found_banner_img !== '') {
+            $og_image = build_absolute_url($domain, $found_banner_img);
         }
     }
 }
 
+// Fallback logic
 if (!$og_title) {
-    $og_title = "Pixis Informática | Especialistas en Computación";
-    $og_description = "Tienda de computación online en Santiago del Estero. Venta de accesorios gamer, hardware de alto rendimiento y servicio técnico especializado.";
-    $og_image = $domain . '/img/TECH24.png';
+    $og_title = $fallback_title;
 }
-
+if (!$og_description) {
+    $og_description = $fallback_description;
+}
 if (!$og_image) {
-    $og_image = $domain . '/img/TECH24.png';
+    $og_image = $fallback_image;
 }
-
-$query_params = !empty($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '';
-$redirect_url = $domain . '/index.html' . $query_params;
 ?>
 <!DOCTYPE html>
 <html lang="es">
