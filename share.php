@@ -342,8 +342,15 @@ if (!$og_image) {
     <meta property="og:description" content="<?php echo htmlspecialchars($og_description); ?>">
     <meta property="og:image" content="<?php echo htmlspecialchars($og_image); ?>">
     <?php if ($is_facebook): ?>
-    <meta property="og:image:width" content="500">
-    <meta property="og:image:height" content="500">
+        <?php if (isset($_GET['banner'])): ?>
+            <!-- Banners: Vista panorámica (ancho completo) -->
+            <meta property="og:image:width" content="1200">
+            <meta property="og:image:height" content="630">
+        <?php else: ?>
+            <!-- Productos/Categorías: Vista cuadrada compacta o centrada -->
+            <meta property="og:image:width" content="500">
+            <meta property="og:image:height" content="500">
+        <?php endif; ?>
     <?php endif; ?>
     <meta property="og:url" content="<?php echo htmlspecialchars($redirect_url); ?>">
     <meta name="twitter:card" content="summary_large_image">
