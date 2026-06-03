@@ -13,7 +13,8 @@ if (isset($_SERVER['HTTP_HOST'])) {
 
 // Redirect real users to the frontend immediately if not a bot
 $user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
-$is_bot = preg_match('/(WhatsApp|facebookexternalhit|Twitterbot|Discordbot|LinkedInBot|TelegramBot|Slackbot|Googlebot|bingbot)/i', $user_agent);
+$is_bot = preg_match('/(WhatsApp|facebookexternalhit|Twitterbot|Discordbot|LinkedInBot|TelegramBot|Slackbot|Googlebot|bingbot|Facebot)/i', $user_agent);
+$is_facebook = (stripos($user_agent, 'facebookexternalhit') !== false || stripos($user_agent, 'Facebot') !== false);
 
 $query_params = !empty($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '';
 $redirect_url = rtrim($domain, '/') . '/index.html' . $query_params;
@@ -340,6 +341,10 @@ if (!$og_image) {
     <meta property="og:title" content="<?php echo htmlspecialchars($og_title); ?>">
     <meta property="og:description" content="<?php echo htmlspecialchars($og_description); ?>">
     <meta property="og:image" content="<?php echo htmlspecialchars($og_image); ?>">
+    <?php if ($is_facebook): ?>
+    <meta property="og:image:width" content="500">
+    <meta property="og:image:height" content="500">
+    <?php endif; ?>
     <meta property="og:url" content="<?php echo htmlspecialchars($redirect_url); ?>">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="<?php echo htmlspecialchars($og_title); ?>">
