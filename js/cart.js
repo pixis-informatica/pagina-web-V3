@@ -1162,7 +1162,10 @@ window.openProductModal = function (card, pushToHistory = true) {
   // Modificar la URL con un identificador único paramétrico para compartir
   if (pushToHistory) {
     const prodId = card.dataset.pixisId || card.dataset.title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-    history.pushState({ modalOpen: true }, "", "?producto=" + prodId + "&" + getCacheBuster());
+    const params = new URLSearchParams(window.location.search);
+    params.set('producto', prodId);
+    params.set('cc', Math.floor(Date.now() / 1000)); // cache buster dinámico
+    history.pushState({ modalOpen: true }, "", "?" + params.toString());
   }
 
   modal.classList.add('active');
@@ -1205,7 +1208,12 @@ function closeModal(fromHistory = false) {
     if (window.history.state && window.history.state.modalOpen) {
       window.history.back();
     } else {
-      history.pushState(null, "", window.location.pathname);
+      // Remover solo el parámetro de producto manteniendo categorías o banners previos
+      const params = new URLSearchParams(window.location.search);
+      params.delete('producto');
+      params.delete('cc'); // Limpiar el cache buster del compartir si venía con él
+      const newQuery = params.toString();
+      history.pushState(null, "", window.location.pathname + (newQuery ? '?' + newQuery : ''));
     }
   }
   modal.classList.remove('active');
@@ -1489,9 +1497,6 @@ function ordenarProductos(productos, ordenarPorPrecio) {
     });
   }
 
-  // Filtrar las visibles para el ordenamiento principal
-  const visibleCards = allCards.filter(card => !card.classList.contains('oculta'));
-
   const getPrice = (el) => {
     const cash = el.dataset.cashPrice || el.querySelector('.btn-add-cart')?.dataset.priceLocal;
     if (cash) return parseInt(String(cash).replace(/\D/g, '')) || 0;
@@ -1501,7 +1506,8 @@ function ordenarProductos(productos, ordenarPorPrecio) {
     return parseInt(text.replace(/\D/g, '')) || 0;
   };
 
-  visibleCards.sort((a, b) => {
+  // Ordenar todas las tarjetas para asegurar que los 'sin-stock' queden estrictamente al final
+  allCards.sort((a, b) => {
     // Prioridad 1: Stock (stock > 0 siempre primero, sin stock al final)
     const aOff = a.classList.contains('sin-stock');
     const bOff = b.classList.contains('sin-stock');
@@ -1516,16 +1522,9 @@ function ordenarProductos(productos, ordenarPorPrecio) {
     }
   });
 
-  // Asignar el CSS order según el resultado del sort
-  visibleCards.forEach((card, i) => {
+  // Asignar el CSS order según el resultado del sort secuencialmente
+  allCards.forEach((card, i) => {
     card.style.order = i;
-  });
-
-  // Las ocultas van al final
-  allCards.forEach(card => {
-    if (card.classList.contains('oculta')) {
-      card.style.order = 9999;
-    }
   });
 }
 /* =========================
@@ -1579,7 +1578,7 @@ window.reinicializarFiltrosYToggles = function() {
           }
         });
 
-        // 🔴 FIX MANTENER ORDEN: Re-aplicamos el orden actual.
+        // 🔴 Re-aplicamos el orden actual.
         ordenarProductos(productos, toggle ? toggle.checked : false);
         aplicarPrecioEspecial();
       });
@@ -1588,14 +1587,16 @@ window.reinicializarFiltrosYToggles = function() {
     // Toggle precio: guard para no agregar listener dos veces
     if (toggle && !toggle._pixisBound) {
       toggle._pixisBound = true;
+      // Forzar que por defecto al recargar/renderizar el checkbox empiece en FALSE para que no confunda al usuario
+      toggle.checked = false;
       toggle.addEventListener('change', () => {
         ordenarProductos(productos, toggle.checked);
         aplicarPrecioEspecial();
       });
     }
 
-    // Inicialización de orden al cargar o renderizar
-    ordenarProductos(productos, toggle ? toggle.checked : false);
+    // Inicialización de orden al cargar o renderizar: SIEMPRE sin ordenar por precio inicialmente (false)
+    ordenarProductos(productos, false);
   });
 };
 
