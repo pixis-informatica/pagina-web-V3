@@ -91,27 +91,37 @@ window.openProductBySlug = function(slug, fromHistory = false) {
             .replace(/(^-|-$)/g, '');
     };
 
+    const openCard = (card) => {
+        if (typeof window.openProductModal === 'function') {
+            window.openProductModal(card, !fromHistory);
+        } else {
+            card.click();
+        }
+        setTimeout(() => {
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+    };
+
+    // PASO 1: Buscar por ID exacto (prioritario — funciona con share.php)
     for (const card of cards) {
-        const title = card.dataset.title;
-        if (title) {
-            if (normalizeSlug(title) === slug) {
-                console.log("Pixis: Producto encontrado por slug, abriendo modal...");
-                if (typeof window.openProductModal === 'function') {
-                    window.openProductModal(card, !fromHistory);
-                } else {
-                    card.click();
-                }
-                
-                // Asegurar que sea visible (scroll)
-                setTimeout(() => {
-                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 100);
-                
-                return true;
-            }
+        if (card.dataset.pixisId && card.dataset.pixisId === slug) {
+            console.log("Pixis: Producto encontrado por ID, abriendo modal...");
+            openCard(card);
+            return true;
         }
     }
-    console.warn("Pixis: No se encontró ningún producto con el slug:", slug);
+
+    // PASO 2: Fallback — buscar por slug generado del título (compatibilidad links antiguos)
+    for (const card of cards) {
+        const title = card.dataset.title;
+        if (title && normalizeSlug(title) === normalizeSlug(slug)) {
+            console.log("Pixis: Producto encontrado por slug de título, abriendo modal...");
+            openCard(card);
+            return true;
+        }
+    }
+
+    console.warn("Pixis: No se encontró ningún producto con el ID/slug:", slug);
     return false;
 };
 /* =========================
@@ -1661,7 +1671,7 @@ window.syncAppStateFromUrl = function(fromHistory = false) {
         }
     }
 
-    // 2. Sincronizar Banners / Categorías / Home
+    // 2. Sincronizar Banners / Categorías / Home (Solo ejecutar si no hay producto abierto, para no sobrecargar el renderizado, o si se navega en el historial)
     if (bannerId) {
         if (window.abrirBannerLink) {
             window.abrirBannerLink(bannerId, fromHistory);
@@ -1671,7 +1681,8 @@ window.syncAppStateFromUrl = function(fromHistory = false) {
             window.abrirCategoria(catId, fromHistory);
         }
     } else {
-        if (window.goHome) {
+        // Solo ir a home si NO hay tampoco producto abierto
+        if (!prodSlug && window.goHome) {
             window.goHome(fromHistory);
         }
     }
@@ -3788,8 +3799,9 @@ document.addEventListener('auxclick', e => {
     // Nos aseguramos que no estén clickeando un botón (agregar al carrito, whatsapp) ni tampoco un enlace
     if (card && !e.target.closest('.btn-add-cart') && !e.target.closest('.btn-wsp') && !e.target.closest('a')) {
       e.preventDefault();
-      let slug = card.dataset.title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-      window.open(window.location.pathname + "?producto=" + slug, "_blank");
+      // Usar pixisId (ID real del producto) para que share.php lo encuentre correctamente
+      const prodId = card.dataset.pixisId || card.dataset.title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      window.open(window.location.pathname + "?producto=" + prodId, "_blank");
     }
   }
 });
