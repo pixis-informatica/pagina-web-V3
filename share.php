@@ -49,6 +49,21 @@ function build_absolute_url($domain, $path) {
     return rtrim($domain, '/') . '/' . $path;
 }
 
+// Helper: genera URL de og-image.php para imágenes de producto.
+// og-image.php centra la imagen en un canvas 1200×630 sin recortar nada.
+// Solo se usa para imágenes de producto (no banners ni fallback).
+function build_og_image_url($domain, $raw_path) {
+    if (empty($raw_path)) return '';
+
+    // Normalizar separadores
+    $raw_path = str_replace('\\', '/', $raw_path);
+    $raw_path = ltrim($raw_path, '/');
+    $raw_path = preg_replace('#/+#', '/', $raw_path);
+
+    // Construir URL al generador con la ruta como parámetro src
+    return rtrim($domain, '/') . '/og-image.php?src=' . rawurlencode($raw_path);
+}
+
 // Helper: format price
 function format_price($price_val) {
     if (is_numeric($price_val)) {
@@ -227,7 +242,8 @@ if (isset($_GET['producto'])) {
         }
 
         if ($p_image !== '') {
-            $og_image = build_absolute_url($domain, $p_image);
+            // Usar og-image.php para generar imagen 1200×630 centrada sin recortar
+            $og_image = build_og_image_url($domain, $p_image);
         }
     }
 }
@@ -341,17 +357,10 @@ if (!$og_image) {
     <meta property="og:title" content="<?php echo htmlspecialchars($og_title); ?>">
     <meta property="og:description" content="<?php echo htmlspecialchars($og_description); ?>">
     <meta property="og:image" content="<?php echo htmlspecialchars($og_image); ?>">
-    <?php if ($is_facebook): ?>
-        <?php if (isset($_GET['banner'])): ?>
-            <!-- Banners: Vista panorámica (ancho completo) -->
-            <meta property="og:image:width" content="1200">
-            <meta property="og:image:height" content="630">
-        <?php else: ?>
-            <!-- Productos/Categorías: Vista cuadrada compacta o centrada -->
-            <meta property="og:image:width" content="500">
-            <meta property="og:image:height" content="500">
-        <?php endif; ?>
-    <?php endif; ?>
+    <!-- Dimensiones fijas 1200×630 para que Facebook no recorte la imagen -->
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:type" content="image/jpeg">
     <meta property="og:url" content="<?php echo htmlspecialchars($redirect_url); ?>">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="<?php echo htmlspecialchars($og_title); ?>">
