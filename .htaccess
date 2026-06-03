@@ -65,11 +65,13 @@
     RewriteEngine On
 
     # =================================================================
+    # REGLA PRIORITARIA: Forzar HTTPS antes de evaluar cualquier bot
+    # =================================================================
+    RewriteCond %{HTTPS} off
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # =================================================================
     # REGLA 1: Productos (?producto=slug)
-    # Captura el slug completo del producto (permite letras, números,
-    # guiones, puntos y caracteres especiales codificados en URL).
-    # Funciona aunque WhatsApp/Facebook agreguen parámetros extra
-    # como &=V3, &fbclid=..., etc. al final de la URL.
     # =================================================================
     RewriteCond %{HTTP_USER_AGENT} (WhatsApp|facebookexternalhit|Twitterbot|Discordbot|LinkedInBot|TelegramBot|Slackbot|Googlebot|bingbot) [NC]
     RewriteCond %{QUERY_STRING} (?:^|&)producto=([^&]+)
@@ -83,17 +85,10 @@
     RewriteRule ^(index\.html)?$ share.php?banner=%1 [L]
 
     # =================================================================
-    # REGLA 3: Categorías (?categoria=id)  ← NUEVA REGLA
+    # REGLA 3: Categorías (?categoria=id)
     # =================================================================
     RewriteCond %{HTTP_USER_AGENT} (WhatsApp|facebookexternalhit|Twitterbot|Discordbot|LinkedInBot|TelegramBot|Slackbot|Googlebot|bingbot) [NC]
     RewriteCond %{QUERY_STRING} (?:^|&)categoria=([^&]+)
     RewriteRule ^(index\.html)?$ share.php?categoria=%1 [L]
 
-</IfModule>
-
-# --- Redirigir a HTTPS si está disponible ---
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteCond %{HTTPS} off
-    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 </IfModule>
