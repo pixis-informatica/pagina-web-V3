@@ -1446,9 +1446,15 @@ body.pixis-edit-mode {
 }
 
 /* ── CARD SELECTION BUTTONS ──────────────────────────────── */
+body.pixis-edit-mode .card {
+  padding-bottom: 55px !important;
+  overflow: visible !important;
+}
+
 .pixis-select-card-btn {
   position: absolute;
-  top: 6px;
+  bottom: 12px !important;
+  top: auto !important;
   left: 50%;
   transform: translateX(-50%);
   z-index: 100000;

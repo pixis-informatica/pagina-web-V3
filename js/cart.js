@@ -3635,34 +3635,42 @@ if (btnShareLink) {
   copyText.style.cssText = "color:#b026ff; font-weight:bold; font-size:14px; margin-left:10px; opacity:0; transition:opacity 0.3s; vertical-align:middle; pointer-events:none;";
   btnShareLink.parentNode.insertBefore(copyText, btnShareLink.nextSibling);
 
+  const getCacheVersion = () => {
+    if (window.PixisState?.state?.site?.cacheVersion) {
+      return window.PixisState.state.site.cacheVersion;
+    }
+    const d = new Date();
+    return d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+  };
+
   const buildProductUrl = () => {
-    const timestamp = Math.floor(Date.now() / 1000);
+    const version = getCacheVersion();
     const basePath = window.location.origin + '/share.php';
 
     if (window.productoActual) {
       const prodId = window.productoActual.id || (window.productoActual.name ? window.productoActual.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : '');
       if (prodId) {
-        return basePath + '?producto=' + prodId + '&cc=' + timestamp;
+        return basePath + '?producto=' + prodId + '&cc=' + version;
       }
     }
 
     const params = new URLSearchParams(window.location.search);
     const prodParam = params.get('producto');
     if (prodParam) {
-      return basePath + '?producto=' + prodParam + '&cc=' + timestamp;
+      return basePath + '?producto=' + prodParam + '&cc=' + version;
     }
 
     const catParam = params.get('categoria');
     if (catParam) {
-      return basePath + '?categoria=' + catParam + '&cc=' + timestamp;
+      return basePath + '?categoria=' + catParam + '&cc=' + version;
     }
 
     const bannerParam = params.get('banner');
     if (bannerParam) {
-      return basePath + '?banner=' + bannerParam + '&cc=' + timestamp;
+      return basePath + '?banner=' + bannerParam + '&cc=' + version;
     }
 
-    return basePath + '?cc=' + timestamp;
+    return basePath + '?cc=' + version;
   };
 
   btnShareLink.addEventListener("click", () => {

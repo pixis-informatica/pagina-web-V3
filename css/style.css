@@ -6349,5 +6349,15 @@ body:has(#toggle-cart:checked) {
   }
 }
 
+/* Garantizar simetría y misma altura de todas las tarjetas de productos */
+.productos .card,
+#searchResults .card,
+.carousel .card {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+}
+
 
 
