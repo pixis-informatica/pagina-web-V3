@@ -24,11 +24,27 @@ if (!$is_bot) {
 }
 
 // Helper: normalize and build absolute URL
+// Convierte backslashes, elimina barras dobles y codifica cada segmento
+// del path (espacios, acentos, etc.) para que la URL sea válida en redes sociales.
 function build_absolute_url($domain, $path) {
     if (empty($path)) return '';
+
+    // 1. Normalizar separadores: backslash Windows → forward slash
     $path = str_replace('\\', '/', $path);
+
+    // 2. Eliminar barra inicial si existe
     $path = ltrim($path, '/');
+
+    // 3. Colapsar barras dobles (ej: img//productos//)
     $path = preg_replace('#/+#', '/', $path);
+
+    // 4. Codificar CADA segmento individualmente (preserva las barras /)
+    //    rawurlencode() convierte espacios en %20, acentos, paréntesis, etc.
+    //    NO se usa urlencode() porque este convierte espacios en + (inválido en rutas)
+    $segments = explode('/', $path);
+    $encoded  = array_map('rawurlencode', $segments);
+    $path     = implode('/', $encoded);
+
     return rtrim($domain, '/') . '/' . $path;
 }
 
@@ -194,8 +210,23 @@ if (isset($_GET['producto'])) {
         }
 
         // og:image
+        $p_image = '';
         if (!empty($found_product['img'])) {
-            $og_image = build_absolute_url($domain, (string)$found_product['img']);
+            $p_image = (string)$found_product['img'];
+        } elseif (!empty($found_product['gallery'])) {
+            // Si no hay img pero hay gallery, extraemos la primera imagen de la galería
+            $gallery_parts = explode(',', (string)$found_product['gallery']);
+            foreach ($gallery_parts as $part) {
+                $trimmed_part = trim($part);
+                if ($trimmed_part !== '') {
+                    $p_image = $trimmed_part;
+                    break;
+                }
+            }
+        }
+
+        if ($p_image !== '') {
+            $og_image = build_absolute_url($domain, $p_image);
         }
     }
 }
