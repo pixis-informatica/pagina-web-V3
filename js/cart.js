@@ -3646,39 +3646,33 @@ if (btnShareLink) {
   btnShareLink.parentNode.insertBefore(copyText, btnShareLink.nextSibling);
 
   const buildProductUrl = () => {
-    // Fecha diaria (YYYYMMDD): estable 24h para que Facebook indexe el preview.
-    // WhatsApp re-scrapa siempre así que también funciona perfectamente.
-    const now  = new Date();
-    const yyyy = now.getFullYear();
-    const mm   = String(now.getMonth() + 1).padStart(2, '0');
-    const dd   = String(now.getDate()).padStart(2, '0');
-    const dateSuffix = '_t=' + yyyy + mm + dd;
+    const timestamp = Math.floor(Date.now() / 1000);
     const basePath = window.location.origin + '/share.php';
 
     if (window.productoActual) {
       const prodId = window.productoActual.id || (window.productoActual.name ? window.productoActual.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : '');
       if (prodId) {
-        return basePath + '?producto=' + prodId + '&' + dateSuffix;
+        return basePath + '?producto=' + prodId + '&cc=' + timestamp;
       }
     }
 
     const params = new URLSearchParams(window.location.search);
     const prodParam = params.get('producto');
     if (prodParam) {
-      return basePath + '?producto=' + prodParam + '&' + dateSuffix;
+      return basePath + '?producto=' + prodParam + '&cc=' + timestamp;
     }
 
     const catParam = params.get('categoria');
     if (catParam) {
-      return basePath + '?categoria=' + catParam + '&' + dateSuffix;
+      return basePath + '?categoria=' + catParam + '&cc=' + timestamp;
     }
 
     const bannerParam = params.get('banner');
     if (bannerParam) {
-      return basePath + '?banner=' + bannerParam + '&' + dateSuffix;
+      return basePath + '?banner=' + bannerParam + '&cc=' + timestamp;
     }
 
-    return basePath + '?' + dateSuffix;
+    return basePath + '?cc=' + timestamp;
   };
 
   btnShareLink.addEventListener("click", () => {
