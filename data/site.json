@@ -52,13 +52,13 @@
       "bannerId": "refrigeracion-raptor"
     },
     {
-      "imgPc": "img/carrusel/gabinetes-pc-1779478645436.jpg",
-      "imgMobile": "img/carrusel/gabinetes-mobile-1779478651946.jpg",
+      "imgPc": "img/carrusel/gabinetes-pc-1780524309494.jpg",
+      "imgMobile": "img/carrusel/perifericos-mobile--2--1780524320127.jpg",
       "bannerId": "gabinetes-raptor"
     },
     {
-      "imgPc": "img/carrusel/perifericos-pc-1779479821586.jpg",
-      "imgMobile": "img/carrusel/perifericos-mobile-1779479825495.jpg",
+      "imgPc": "img/carrusel/perifericos-pc-1780524339760.jpg",
+      "imgMobile": "img/carrusel/perifericos-mobile-1780524342977.jpg",
       "bannerId": "perifericos-raptor"
     },
     {
@@ -119,5 +119,5 @@
       "t": "GEFORCE RTX SERIES 50"
     }
   },
-  "cacheVersion": 1780521446299
+  "cacheVersion": 1780524350059
 }
