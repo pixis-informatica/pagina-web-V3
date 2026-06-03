@@ -30,8 +30,8 @@
       "bannerId": "notebooks"
     },
     {
-      "imgPc": "img/carrusel/prolongalizador-pc-1779478491716.jpg",
-      "imgMobile": "img/carrusel/prolongalizador-mobile-1779478488253.jpg",
+      "imgPc": "img/carrusel/gabinetes-pc--2--1780525161711.jpg",
+      "imgMobile": "img/carrusel/perifericos-mobile--3--1780525170853.jpg",
       "bannerId": "prolongadores"
     }
   ],
@@ -119,5 +119,5 @@
       "t": "GEFORCE RTX SERIES 50"
     }
   },
-  "cacheVersion": 1780524350056
+  "cacheVersion": 1780525223165
 }
