@@ -429,32 +429,41 @@ body.light-mode {
 
 .cart-modal {
     background: #ffffff;
-    border: 1px solid #fdfdfd;
+    border: 1px solid #cfd5e1;
 }
 
 .cart-header {
-    border-bottom: 1px solid #ffffff;
+    border-bottom: 1px solid #cfd5e1;
 }
 
 .cart-header h3 {
-    color: #03d9ff;
+    color: #0284c7; /* Celeste/Azul de alta visibilidad */
+}
+
+.close-cart {
+    color: #334155 !important;
+}
+
+.close-cart:hover {
+    color: #ef4444 !important;
 }
 
 .cart-footer {
     background: #ffffff;
+    border-top: 1px solid #cfd5e1;
 }
 
 .cart-item {
-    background: #ffffff;
-    border-bottom: 1px solid #8d8d8d;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .cart-item h4 {
-    color: #000000;
+    color: #0f172a;
 }
 
 .cart-item span {
-    color: #00ff73;
+    color: #059669 !important; /* Verde precio de alta visibilidad */
 }
 
 /* Cantidad */
@@ -469,17 +478,17 @@ body.light-mode {
     width: 26px;
     height: 26px;
     font-size: 14px;
-
     border-radius: 6px;
-    border: 1px solid #4dbcd8;
-    background: #000303;
-    color: #fff;
-
+    border: 1px solid #cbd5e1 !important;
+    background: #f1f5f9 !important;
+    color: #334155 !important;
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .cart-qty button:hover {
-    background: #21acec;
+    background: #e2e8f0 !important;
+    color: #0f172a !important;
 }
 
 .cart-qty span {
@@ -487,17 +496,27 @@ body.light-mode {
     font-weight: bold;
     min-width: 18px;
     text-align: center;
+    color: #0f172a !important; /* Cantidad de producto legible */
 }
 
 .cart-total {
-    border-top: 2px solid #00f134;
+    border-top: 2px solid #059669;
 }
 
 .cart-total strong {
-    color: #f8f8f8;
+    color: #000000 !important; /* Total en color negro para que no se pierda */
 }
 
 /* INPUTS */
+
+.cart-section {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+.cart-section h4 {
+    color: #1e3a8a !important; /* Títulos de sección legibles */
+}
 
 .cart-section input[type="text"] {
     background: #ffffff;
@@ -509,6 +528,77 @@ body.light-mode {
     background: #ffffff;
     border: 1px solid #cfd5e1;
     color: #2a2a2a;
+}
+
+#btnAbrirTerminos {
+    color: #2563eb !important;
+}
+
+#btnAbrirTerminos:hover {
+    color: #1d4ed8 !important;
+    text-decoration: underline !important;
+}
+
+.aviso-tarjeta {
+    color: #4b5563 !important;
+}
+
+.aviso-envio-pago {
+    background: #fdf2f8 !important;
+    border-left: 4px solid #db2777 !important;
+    color: #831843 !important;
+}
+
+.aviso-envio-pago strong {
+    color: #be185d !important;
+}
+
+.cuota-item-carrito {
+    background: rgba(5, 150, 105, 0.05) !important;
+    border: 1px solid rgba(5, 150, 105, 0.2) !important;
+    color: #0f172a !important;
+}
+
+.cuota-item-carrito strong {
+    color: #059669 !important;
+}
+
+.cart-cuotas-mensaje {
+    background: rgba(5, 150, 105, 0.05) !important;
+    border: 1px solid rgba(5, 150, 105, 0.2) !important;
+    color: #0f172a !important;
+}
+
+.cart-cuotas-mensaje strong {
+    color: #059669 !important;
+}
+
+.cart-cuotas-mensaje small {
+    color: #4b5563 !important;
+}
+
+/* MODAL TERMINOS */
+.terminos-contenido {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: 1px solid #cfd5e1 !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+}
+
+.terminos-contenido h3 {
+    color: #1e3a8a !important;
+}
+
+.terminos-texto p {
+    color: #334155 !important;
+}
+
+.cerrar-terminos {
+    color: #334155 !important;
+}
+
+.cerrar-terminos:hover {
+    color: #ef4444 !important;
 }
 
 /* BOTON FINALIZAR */
