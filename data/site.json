@@ -32,7 +32,7 @@
     {
       "imgPc": "img/carrusel/gabinetes-pc--2--1780525161711.jpg",
       "imgMobile": "img/carrusel/perifericos-mobile--3--1780525170853.jpg",
-      "bannerId": "prolongadores"
+      "bannerId": "gabinetesmlogix"
     }
   ],
   "carouselBottom": [
@@ -84,12 +84,6 @@
       "f": "notebookMiniPc",
       "t": "Notebooks y Mini PCs"
     },
-    "prolongadores": {
-      "f": [
-        "prolongador"
-      ],
-      "t": "Prolongadores Kelyx"
-    },
     "ssd-hiksemi": {
       "f": "ssdHiksemi",
       "t": "SSDs Hiksemi"
@@ -117,9 +111,13 @@
     "geforcertxseries50": {
       "f": "geforcertxseries50",
       "t": "GEFORCE RTX SERIES 50"
+    },
+    "gabinetesmlogix": {
+      "f": "gabinetesmlogix",
+      "t": "GABINETES MLOGIX"
     }
   },
-  "cacheVersion": 1780526003068,
+  "cacheVersion": 1780589941327,
   "tasasCuotas": [
     1.13,
     1.31,
